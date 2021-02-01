@@ -237,36 +237,6 @@ std::vector<std::string> CPPotify::browse(std::string browseCategory, std::strin
     return std::vector<std::string> {targetURL, res};
 }
 
-/*
-std::string CPPotify::getPlaylists(bool self, std::string userID, std::string playlistID, std::string playlistObj, std::string fields, int limit, int offset) {
-    return this->curlGET("playlists", self, userID, playlistID, playlistObj, fields, limit, offset);
-}
-
-std::string CPPotify::getAlbums(std::string albumID, std::string albumObj, int limit, int offset) {
-    return this->curlGET("albums", false, "", albumID, albumObj, "", limit, offset);
-}
-
-std::string CPPotify::getArtists(std::string artistID, std::string artistObj, std::string includeGroups, int limit, int offset) {
-    return this->curlGET("artists", false, "", artistID, artistObj, includeGroups, limit, offset);
-}
-
-std::string CPPotify::getEpisodes(std::string episodeID) {
-    return this->curlGET("episodes", false, "", episodeID);
-}
-
-std::string CPPotify::getShows(std::string showID, std::string showObj) {
-    return this->curlGET("shows", false, "", showID, showObj);
-}
-
-std::string CPPotify::getProfiles(bool self, std::string userID) { 
-    return this->curlGET("", self, userID);
-}
-
-std::string CPPotify::getTracks(std::string trackID, std::string trackObj) {
-    return this->curlGET(trackObj, false, "", trackID); 
-}
-*/
-
 std::string CPPotify::getRequestToken() {
     return this->oAuthToken;
 }

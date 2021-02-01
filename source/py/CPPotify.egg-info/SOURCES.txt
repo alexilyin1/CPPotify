@@ -1,0 +1,7 @@
+setup.py
+/home/amt99/Desktop/CPPotify/source/module/CPPotify.cpp
+/home/amt99/Desktop/CPPotify/source/module/base64.cpp
+CPPotify.egg-info/PKG-INFO
+CPPotify.egg-info/SOURCES.txt
+CPPotify.egg-info/dependency_links.txt
+CPPotify.egg-info/top_level.txt

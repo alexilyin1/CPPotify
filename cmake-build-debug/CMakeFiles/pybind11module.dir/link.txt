@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -g  -shared  -o pybind11module.cpython-38-x86_64-linux-gnu.so CMakeFiles/pybind11module.dir/source/module/CPPotify.cpp.o CMakeFiles/pybind11module.dir/source/module/base64.cpp.o  -lcurl 

@@ -1,0 +1,6 @@
+/home/amt99/Desktop/CPPotify/build/CMakeFiles/rebuild_cache.dir
+/home/amt99/Desktop/CPPotify/build/CMakeFiles/edit_cache.dir
+/home/amt99/Desktop/CPPotify/build/CMakeFiles/pybind11module.dir
+/home/amt99/Desktop/CPPotify/build/CMakeFiles/pybind11app.dir
+/home/amt99/Desktop/CPPotify/build/externals/pybind11-2.6.1/CMakeFiles/rebuild_cache.dir
+/home/amt99/Desktop/CPPotify/build/externals/pybind11-2.6.1/CMakeFiles/edit_cache.dir

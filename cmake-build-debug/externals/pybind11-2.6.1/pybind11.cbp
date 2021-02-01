@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="pybind11"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\externals\;CMake Files\externals\pybind11-2.6.1\;CMake Files\externals\pybind11-2.6.1\tools\;CMake Files\..\;CMake Files\..\..\;CMake Files\..\..\..\;CMake Files\..\..\..\..\;CMake Files\..\..\..\..\usr\;CMake Files\..\..\..\..\usr\lib\;CMake Files\..\..\..\..\usr\lib\cmake\;CMake Files\..\..\..\..\usr\lib\cmake\nlohmann_json\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/amt99/Desktop/CPPotify/cmake-build-debug/externals/pybind11-2.6.1"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j6 -f &quot;/home/amt99/Desktop/CPPotify/cmake-build-debug/externals/pybind11-2.6.1/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j6 -f &quot;/home/amt99/Desktop/CPPotify/cmake-build-debug/externals/pybind11-2.6.1/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j6 -f &quot;/home/amt99/Desktop/CPPotify/cmake-build-debug/externals/pybind11-2.6.1/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j6 -f &quot;/home/amt99/Desktop/CPPotify/cmake-build-debug/externals/pybind11-2.6.1/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/amt99/Desktop/CPPotify/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/amt99/Desktop/CPPotify/externals/pybind11-2.6.1/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\externals\pybind11-2.6.1\"/>
+		</Unit>
+		<Unit filename="/home/amt99/Desktop/CPPotify/externals/pybind11-2.6.1/tools/FindPythonLibsNew.cmake">
+			<Option virtualFolder="CMake Files\externals\pybind11-2.6.1\tools\"/>
+		</Unit>
+		<Unit filename="/home/amt99/Desktop/CPPotify/externals/pybind11-2.6.1/tools/pybind11Common.cmake">
+			<Option virtualFolder="CMake Files\externals\pybind11-2.6.1\tools\"/>
+		</Unit>
+		<Unit filename="/home/amt99/Desktop/CPPotify/externals/pybind11-2.6.1/tools/pybind11Tools.cmake">
+			<Option virtualFolder="CMake Files\externals\pybind11-2.6.1\tools\"/>
+		</Unit>
+		<Unit filename="/home/amt99/Desktop/CPPotify/../../../../usr/lib/cmake/nlohmann_json/nlohmann_jsonConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\cmake\nlohmann_json\"/>
+		</Unit>
+		<Unit filename="/home/amt99/Desktop/CPPotify/../../../../usr/lib/cmake/nlohmann_json/nlohmann_jsonConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\cmake\nlohmann_json\"/>
+		</Unit>
+		<Unit filename="/home/amt99/Desktop/CPPotify/../../../../usr/lib/cmake/nlohmann_json/nlohmann_jsonTargets.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\usr\lib\cmake\nlohmann_json\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

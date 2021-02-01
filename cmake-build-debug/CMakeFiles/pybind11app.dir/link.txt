@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/pybind11app.dir/source/app/app.cpp.o CMakeFiles/pybind11app.dir/source/module/CPPotify.cpp.o CMakeFiles/pybind11app.dir/source/module/base64.cpp.o  -o pybind11app  -lcurl /usr/lib/x86_64-linux-gnu/libpython3.8.so 

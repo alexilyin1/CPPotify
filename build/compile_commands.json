@@ -1,0 +1,27 @@
+[
+{
+  "directory": "/home/amt99/Desktop/CPPotify/build",
+  "command": "/usr/bin/x86_64-linux-gnu-g++-9 -Dpybind11module_EXPORTS -I/home/amt99/Desktop/CPPotify/source/module -isystem /usr/include/python3.8 -isystem /home/amt99/Desktop/CPPotify/externals/pybind11-2.6.1/include -g -fPIC -fvisibility=hidden -std=gnu++17 -o CMakeFiles/pybind11module.dir/source/module/CPPotify.cpp.o -c /home/amt99/Desktop/CPPotify/source/module/CPPotify.cpp",
+  "file": "/home/amt99/Desktop/CPPotify/source/module/CPPotify.cpp"
+},
+{
+  "directory": "/home/amt99/Desktop/CPPotify/build",
+  "command": "/usr/bin/x86_64-linux-gnu-g++-9 -Dpybind11module_EXPORTS -I/home/amt99/Desktop/CPPotify/source/module -isystem /usr/include/python3.8 -isystem /home/amt99/Desktop/CPPotify/externals/pybind11-2.6.1/include -g -fPIC -fvisibility=hidden -std=gnu++17 -o CMakeFiles/pybind11module.dir/source/module/authControl.cpp.o -c /home/amt99/Desktop/CPPotify/source/module/authControl.cpp",
+  "file": "/home/amt99/Desktop/CPPotify/source/module/authControl.cpp"
+},
+{
+  "directory": "/home/amt99/Desktop/CPPotify/build",
+  "command": "/usr/bin/x86_64-linux-gnu-g++-9  -I/home/amt99/Desktop/CPPotify/source/app -I/home/amt99/Desktop/CPPotify/source/module -isystem /usr/include/python3.8 -isystem /home/amt99/Desktop/CPPotify/externals/pybind11-2.6.1/include -g -std=gnu++17 -o CMakeFiles/pybind11app.dir/source/app/app.cpp.o -c /home/amt99/Desktop/CPPotify/source/app/app.cpp",
+  "file": "/home/amt99/Desktop/CPPotify/source/app/app.cpp"
+},
+{
+  "directory": "/home/amt99/Desktop/CPPotify/build",
+  "command": "/usr/bin/x86_64-linux-gnu-g++-9  -I/home/amt99/Desktop/CPPotify/source/app -I/home/amt99/Desktop/CPPotify/source/module -isystem /usr/include/python3.8 -isystem /home/amt99/Desktop/CPPotify/externals/pybind11-2.6.1/include -g -std=gnu++17 -o CMakeFiles/pybind11app.dir/source/module/CPPotify.cpp.o -c /home/amt99/Desktop/CPPotify/source/module/CPPotify.cpp",
+  "file": "/home/amt99/Desktop/CPPotify/source/module/CPPotify.cpp"
+},
+{
+  "directory": "/home/amt99/Desktop/CPPotify/build",
+  "command": "/usr/bin/x86_64-linux-gnu-g++-9  -I/home/amt99/Desktop/CPPotify/source/app -I/home/amt99/Desktop/CPPotify/source/module -isystem /usr/include/python3.8 -isystem /home/amt99/Desktop/CPPotify/externals/pybind11-2.6.1/include -g -std=gnu++17 -o CMakeFiles/pybind11app.dir/source/module/authControl.cpp.o -c /home/amt99/Desktop/CPPotify/source/module/authControl.cpp",
+  "file": "/home/amt99/Desktop/CPPotify/source/module/authControl.cpp"
+}
+]

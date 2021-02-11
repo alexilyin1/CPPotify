@@ -40,7 +40,7 @@ class CPPotify:
         
         self.TOKEN_start = datetime.now()
 
-    def request_get(self, spotify_obj: str, get_own_values: bool, user_id: str = '', spotify_id: [str, list] = '', item_obj: str = '', fields: str = '', limit: int = 50, offset: int = 0):
+    def request_get(self, spotify_obj: str, payload: dict, query: dict = {}):
         """
         Use the linked PyBind11 C++ class to make HTTP requests using the C++ library 'libcurl'
 
@@ -58,7 +58,8 @@ class CPPotify:
         @returns error_obj: If query returns an error, will call the parse_error function to return a custom error object
         @returns response: If query succesful, returns the results of the query
         """
-        response = self._cpp_obj.curlGET(spotify_obj, get_own_values, user_id, spotify_id, item_obj, fields, limit, offset)
+        
+        response = self._cpp_obj.curlGET(spotify_obj, payload, query)
 
         if 'error' in json.loads(response[1]).keys():
             return self._parse_errors(json.loads(response[1]), spotify_obj, response[0], datetime.now())
@@ -101,7 +102,7 @@ class CPPotify:
         
         if get_own_playlists and (user_id != '' or playlist_id != '' or playlist_obj != ''):
             raise ValueError(
-                    "Spotify API only supports listing playlists for your linked account. Try again without populating the user_id, playlist_id and playlist_obj arguments"
+                    "Spotify API will only support listing playlists for your linked account. Try again without populating the user_id, playlist_id and playlist_obj arguments"
                     )
         
         if playlist_id != '' and (limit != 100 or offset != 0):
@@ -109,8 +110,18 @@ class CPPotify:
                 "Limit and Offset arguments can will be ignored when returning a single playlist object"
                 )
 
-        return self.request_get('playlists', get_own_playlists, user_id, playlist_id, playlist_obj, fields.replace(',', '%2C'), limit, offset)
+        payload = {
+            'self': get_own_playlists,
+            'user_id': user_id,
+            'playlist_id': playlist_id,
+            'playlist_obj': fields.replace(',', '%2C'),
+            'limit': str(limit),
+            'offset': str(limit)
+            }
 
+        return self.request_get('playlists', payload)
+
+    """
     def get_albums(self, album_id: [list, str], album_obj = '', limit = 50, offset = 0):
         """
         Return information about Spotify albums

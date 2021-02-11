@@ -28,8 +28,43 @@ size_t CPPotify::WriteCallback(void *contents, size_t size, size_t nmemb, void *
     return size * nmemb;
 }
 
+std::vector<std::string> CPPotify::curlGET(std::string payload, std::string query) {
+    std::string targetURL = "https://api.spotify.com/v1/" + payload;
+    
+    /* Logging  */
+    std::cout << targetURL << std::endl;
+
+    CURL *curl;
+    std::string res;
+    
+    curl = curl_easy_init();
+    if(curl) {
+        try {
+            curl_easy_setopt(curl, CURLOPT_TCP_NODELAY, 0);
+            curl_easy_setopt(curl, CURLOPT_URL, targetURL.c_str());
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, this->WriteCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &res);
+
+            std::string bearer = "Content-Type: application/json"; 
+            struct curl_slist *bearerChunk = nullptr;
+            bearerChunk = curl_slist_append(bearerChunk, bearer.c_str());
+            bearerChunk = curl_slist_append(bearerChunk, ("Authorization: Bearer " + regex_replace(this->TOKEN, regex("\""), "")).c_str());
+            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, bearerChunk);
+
+            curl_easy_perform(curl);
+            curl_easy_cleanup(curl);
+        }
+        catch (const char* Exception) {
+            cerr << Exception << std::endl;
+        }
+    }
+    
+    return std::vector<std::string> {targetURL, res};
+}
+
+/*
 std::vector<std::string> CPPotify::curlGET(std::string spotifyObj, bool self, std::string userID, std::string spotifyID, std::string itemObj, std::string fields, int limit, int offset) {
-    std::string targetURL;
+    std::string targetURL = "https://api.spotify.com/v1/";
     if (!self) {
         if ((spotifyObj == "audio-features" || spotifyObj == "tracks" || spotifyObj == "albums" || spotifyObj == "artists" || spotifyObj == "episodes" || spotifyObj == "shows") && spotifyID.size() > 25) {
             targetURL = "https://api.spotify.com/v1/" + spotifyObj + "/?ids=" + spotifyID;
@@ -61,7 +96,6 @@ std::vector<std::string> CPPotify::curlGET(std::string spotifyObj, bool self, st
             targetURL = "https://api.spotify.com/v1/me/" + spotifyObj + "/" + itemObj;
         }
     }
-    /* Logging  */
     std::cout << targetURL << std::endl;
 
     CURL *curl;
@@ -91,6 +125,8 @@ std::vector<std::string> CPPotify::curlGET(std::string spotifyObj, bool self, st
     
     return std::vector<std::string> {targetURL, res};
 }
+*/
+
 
 std::vector<std::string> CPPotify::curlPOST(std::string spotifyObj, bool self, std::string spotifyID, std::string itemObj) {
     std::string targetURL;

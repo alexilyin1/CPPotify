@@ -1,39 +1,5 @@
+import webbrowser
 from rauth import OAuth2Service
-import oauth2
-
-
-class CPPotifySiteAdapter(oauth2.web.AuthorizationCodeGrantSiteAdapter, oauth2.web.ImplicitGrantSiteAdapter):
-
-    TEMPLATE = '''
-                <html>
-                    <body>
-                        <p>
-                            <a href="{url}&confirm=confirm">confirm</a>
-                        </p>
-                        <p>
-                            <a href="{url}&deny=deny">deny</a>
-                        </p>
-                    </body>
-                </html>
-                '''
-
-def authenticate(self, request, environ, scopes, client):
-    if request.post_param("confirm") == "confirm":
-        return {}
-    
-    raise oauth2.error.UserNotAuthenticated
-
-def render_auth_page(self, request, response, environ, scopes, client):
-    url = request.path + "?" + request.query_string
-    response.body = self.TEMPLATE.format(url = url)
-    return response
-
-def user_has_denied_access(self, request):
-    if request.post_param("deny") == "deny":
-        return True
-    
-    return False
-
 
 class oAuth:
 
@@ -44,6 +10,7 @@ class oAuth:
         self.STATE = STATE
         self.SCOPE = SCOPE
         self.SHOW_DIALOG = SHOW_DIALOG
+        self.TOKEN = null
 
         self.spotify_client = OAuth2Service(client_id = self.CLIENT_ID,
                                             client_secret = self.CLIENT_SECRET,
@@ -51,20 +18,22 @@ class oAuth:
                                             authorize_url = "https://accounts.spotify.com/authorize",
                                             access_token_url = "https://accounts.spotify.com/api/token",
                                             base_url = "https://accounts.spotify.com/"
-                                            )
+                                        )
+
         params = {'response_type': 'code',
                   'redirect_uri': self.REDIRECT_URI,
                   'state': self.STATE,
                   'scope': self.SCOPE,
                   'show_dialog': str(self.SHOW_DIALOG)
-                 }
+                }
+
         self.auth_url = self.spotify_client.get_authorize_url(**params)
 
-        '''self.client_store = oauth2.store.memory.ClientStore()
-        self.client_store.add_client(client_id = self.CLIENT_ID, 
-                                     client_secret = self.CLIENT_SECRET,
-                                     redirect_uris = [self.REDIRECT_URI])
-        self.site_adapter = CPPotifySiteAdapter()'''
-
-    def getAuthToken(self):
+    def get_auth_url(self):
         return self.auth_url
+
+    def open_auth_url(self):
+        webbrowser.open(self.auth_url)
+
+    def set_token(self, token_url):
+        pass

@@ -26,10 +26,23 @@ public:
     ~CPPotify();
 
     //std::vector<std::string> curlGET(std::string spotifyObj, bool self, std::string userID = "", std::string spotifyID = "", std::string itemObj = "", std::string fields = "", int limit = 50, int offset = 0);
-    std::vector<std::string> curlGET(std::string payload, std::string query = "");
-    std::vector<std::string> curlPOST(std::string spotifyObj, bool self, std::string spotifyID = "", std::string itemObj = "");
-    std::vector<std::string> search(std::string searchQuery, std::string type, std::map<std::string, std::string> filter = std::map<std::string, std::string>(), int limit = 50, int offset = 0);
-    std::vector<std::string> browse(std::string browseCategory, std::string timestamp, std::string categoryID = "", std::string categoryObj = "", int limit = 50, int offset = 0);
+    std::vector<std::string> curlGET(std::string spotifyObj, std::map<std::string, std::string> payload, std::string query = "");
+    //std::vector<std::string> curlPOST(std::string spotifyObj, bool self, std::string spotifyID = "", std::string itemObj = "");
+    
+    std::vector<std::string> getAlbums(std::string albumID, std::string albumObj = "", int limit = 50, int offset = 0);
+    std::vector<std::string> getArtists(std::string artistID, std::string artistObj = "", std::string include_groups = "", int limit = 50, int offset = 0);
+    std::vector<std::string> getEpisodes(std::string episodeID);    
+    std::vector<std::string> getPlaylists(bool getOwnPlaylists, std::string userID = "", std::string playlistID = "", std::string playlistObj = "", std::string fields = "", int limit = 50, int offset = 0);
+    std::vector<std::string> getProfiles(bool getOwnProfile, std::string userID);    
+    std::vector<std::string> getShows(std::string showID, std::string showObj = "");
+    std::vector<std::string> getTracks(std::string trackID, std::string trackObj = "");
+    std::vector<std::string> getPlayer(std::string playerObj = "");
+    std::vector<std::string> search(std::string query, std::string objType = "", std::map<std::string, std::string> filt = std::map<std::string, std::string>(), int limit = 50, int offset = 0);
+    std::vector<std::string> browse(std::string browseCategory, std::string categoryID = "", std::string categoryObj = "", std::string timestamp = "", int limit = 50, int offset = 0);
+
+    /*
+    void postPlayer(std::string playerAction);
+    */
 
     std::string getRequestToken();
 };

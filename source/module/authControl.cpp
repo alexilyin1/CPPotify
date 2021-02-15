@@ -103,8 +103,8 @@ std::string authControl::auth() {
     return to_string(j["access_token"]);
 }
 
-void authControl::setToken() {
-    this->TOKEN = this->auth();
+void authControl::setToken(std::string token) {
+    this->TOKEN = token;
 }
 
 std::string authControl::getClientID() {
@@ -120,7 +120,7 @@ std::string authControl::getToken() {
         return "Authorization not completed, use the auth() method before continuing";
     }
     else {
-        return this->TOKEN;
+        return "code=" + this->TOKEN;
     }
 }
 
@@ -130,7 +130,7 @@ bool authControl::checkAuth() {
 
 clientCredentials::clientCredentials(std::string ID, std::string SECRET) : authControl(ID, SECRET) {}
 
-oAuth::oAuth(std::string ID, std::string oAuthToken, std::string REDIRECT_URI, std::string STATE, std::string SCOPE, bool SHOW_DIALOG) : authControl(ID) {
+oAuth::oAuth(std::string ID, std::string SECRET, std::string oAuthToken, std::string REDIRECT_URI, std::string STATE, std::string SCOPE, bool SHOW_DIALOG) : authControl(ID, SECRET) {
     this->oAuthToken = oAuthToken; 
     this->REDIRECT_URI = REDIRECT_URI;
     this->STATE = STATE;
@@ -138,33 +138,12 @@ oAuth::oAuth(std::string ID, std::string oAuthToken, std::string REDIRECT_URI, s
     this->SHOW_DIALOG = SHOW_DIALOG;
 }
 
-std::string oAuth::urlify(std::string URL) {
-    std::string res;
-
-    for (char c : URL) {
-        if (c == ':') {
-            res.append("%3A");
-        }
-        else if (c == '/') {
-            res.append("%2F");
-        }
-        else if (c == ' ') {
-            res.append("%20");
-        }
-        else {
-            res.push_back(c);
-        }
-    }
-
-    return res;
-}
-
-std::string oAuth::auth(std::string oAuthToken) {
-    return "auth";
+std::string oAuth::getAuthToken() {
+    return this->oAuthToken;
 }
 
 std::string oAuth::getRedirectURI() {
-    return this->REDIRECT_URI;
+    return "redirect_uri=" + this->REDIRECT_URI;
 }
 
 std::string oAuth::getScope() {

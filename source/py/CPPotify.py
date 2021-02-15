@@ -11,14 +11,33 @@ from auth import oAuth
 
 class CPPotify:
     """
-    Python wrapper for C++ Spotify API class
+    Python wrapper for C++ Spotify API class. This class calls methods built in a C++ class
 
-    get_playlists: Get playlist information
-    get_albums: Get album information
-    get_artists: Get artist information
-    get_tracks: Get track features/attributes
-    search: Use the Spotify API search feature 
-    browse: Use the Spotify API browse feature, parses the Spotify 'Browse' page
+    For additional details on Spotify API functionality and function arguments, visit the official Spotify API web reference:
+    https://developer.spotify.com/documentation/web-api/reference
+
+    Example Client Credentials flow:
+
+        cpp = CPPotify('your client id', 'your client secret')
+        cpp.get_albums('spotify id for album you want to request', 'tracks')
+
+    Example oAuth 2.0 flow:
+
+        cpp = CPPotify('your client id', 'your client secret', 'your redirect URI as set in your Spotify API profile', 'state', 'scope', True/False)
+        cpp.oAuth_flow() <- Warning: This method will open a URL in your default browser. See source/py/oAuth for additional details
+        cpp.oAuth_set_token('url after enabling auth') 
+        cpp.get_albums('spotify id for album you want to request', 'tracks')
+
+    get_albums: Get Spotify Album tracks/attributes
+    get_artists: Get Spotify Artist details
+    get_episodes: Get Spotify Episode attributes
+    get_playlists: Get Spotify Playlist tracks/images/details
+    get_profiles: Get Spotify Profile information 
+    get_shows: Get Spotify Show attributes
+    get_tracks: Get Spotify Track features/attributes
+    get_player: Get Spotify Player information. To interfact with the player, refer to other _player methods
+    search: Use the Spotify API search functionality 
+    browse: View information from the Spotify 'Browse' page
 
     _token_check: Spotify API tokens are currently set to expire after 60 mintues - this function will auto-renew tokens 
     """
@@ -30,15 +49,26 @@ class CPPotify:
         self.STATE = STATE
         self.SCOPE = SCOPE 
         self.SHOW_DIALOG = SHOW_DIALOG
+        self.TOKEN = None
+        self.oAuth = None
+        self.oAuthToken = None
 
         if REDIRECT_URI != "" and STATE != "" and SCOPE != "":
             self.oAuth = oAuth(self.CLIENT_ID, self.CLIENT_SECRET, self.REDIRECT_URI, self.STATE, self.SCOPE, self.SHOW_DIALOG)
-            self.authToken = self.oAuth.getAuthToken()
-            self._cpp_obj = pybind11module.CPPotify(self.CLIENT_ID, self.authToken, self.CLIENT_SECRET, self.REDIRECT_URI, self.STATE, self.SCOPE, self.SHOW_DIALOG)
+            self._cpp_obj = None
         else:
             self._cpp_obj = pybind11module.CPPotify(self.CLIENT_ID, self.CLIENT_SECRET)
         
         self.TOKEN_start = datetime.now()
+
+    def oAuth_flow(self, url):
+        if not self.oAuth:
+            return "CPPotify object initialized with Client Credentials authorization. Initialize the object with necessary oAuth arguments before proceeding"
+        
+        self.oAuth.set_oAuth_token(url)
+        self.oAuthToken = self.oAuth.TOKEN
+        
+        self._cpp_obj = pybind11module.CPPotify(self.CLIENT_ID, self.CLIENT_SECRET, self.oAuthToken, self.REDIRECT_URI, self.STATE, self.SCOPE, self.SHOW_DIALOG)
 
     def get_albums(self, album_id: [list, str], album_obj = '', limit = 50, offset = 0):
         """
@@ -312,24 +342,28 @@ class CPPotify:
             call[0],
             datetime.now()
         ) 
-
+            
     def _token_check(self):
         """
         Auto regenerate Spotify tokens after 1 hour, use the "TOKEN_start" class variable
         """
-        seconds_after_start = (datetime.now() - self.TOKEN_start).seconds
-        if seconds_after_start >= 3000 and seconds_after_start < 3600:
-            warnings.warn(
-                'Spotify token nearing expiration. This class will generate a new Spotify token when the token expires'
-                )
-        elif seconds_after_start >= 3600:
-            warnings.warn(
-                'Spotify token has expired. No action needed, generating new token...'
-                )
-            self._cpp_obj.ac.auth()
-            self.TOKEN_start = datetime.now()
+        if not self.oAuth:
+            seconds_after_start = (datetime.now() - self.TOKEN_start).seconds
+            if seconds_after_start >= 3000 and seconds_after_start < 3600:
+                warnings.warn(
+                    'Spotify token nearing expiration. This class will generate a new Spotify token when the token expires'
+                    )
+            elif seconds_after_start >= 3600:
+                warnings.warn(
+                    'Spotify token has expired. No action needed, generating new token...'
+                    )
+                self._cpp_obj.ac.auth()
+                self.TOKEN_start = datetime.now()
 
-            warnings.warn('New Spotify token created')
+                warnings.warn('New Spotify token created')
+        else:
+            self.oAuth.new_token()
+            self.TOKEN_start = datetime.now()
 
     def _parse_errors(self, response: dict, obj, request_url, timestamp: datetime):
         """

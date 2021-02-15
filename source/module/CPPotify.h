@@ -44,6 +44,14 @@ public:
     void postPlayer(std::string playerAction);
     */
 
-    std::string getRequestToken();
+    std::string getClientID();
+    std::string getClientSecret();
+    std::string getAuthToken();
+    std::string getRedirectURI();
+    std::string getState();
+    std::string getScope();
+    bool getShowDialog();
+    std::string getToken();
+    
 };
 #endif

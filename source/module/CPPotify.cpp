@@ -17,8 +17,8 @@ CPPotify::CPPotify(std::string ID, std::string SECRET) : CLIENT_ID(ID), CLIENT_S
 }
 
 CPPotify::CPPotify(std::string ID, std::string SECRET, std::string oAuthToken, std::string REDIRECT_URI, std::string STATE, std::string SCOPE, bool SHOW_DIALOG) : CLIENT_ID(ID), CLIENT_SECRET(SECRET), oAuthToken(oAuthToken), REDIRECT_URI(REDIRECT_URI), STATE(STATE), SCOPE(SCOPE), SHOW_DIALOG(SHOW_DIALOG) {    
-    oAuth ac(this->CLIENT_ID, this->oAuthToken, this->REDIRECT_URI, this->STATE, this->SCOPE, this->SHOW_DIALOG);
-    this->TOKEN = ac.auth(this->oAuthToken);
+    oAuth ac(this->CLIENT_ID, this->CLIENT_SECRET, this->oAuthToken, this->REDIRECT_URI, this->STATE, this->SCOPE, this->SHOW_DIALOG);
+    this->TOKEN = ac.auth();
     this->ac = ac;
 }
 
@@ -295,9 +295,35 @@ std::vector<std::string> CPPotify::search(std::string query, std::string objType
     return this->curlGET("search", payload);
 }
 
+std::string CPPotify::getClientID() {
+    return this->CLIENT_ID;
+}
+std::string CPPotify::getClientSecret() {
+    return this->CLIENT_SECRET;
+}
 
-std::string CPPotify::getRequestToken() {
+std::string CPPotify::getAuthToken() {
     return this->oAuthToken;
+}
+
+std::string CPPotify::getRedirectURI() {
+    return this->REDIRECT_URI;
+}
+
+std::string CPPotify::getState() {
+    return this->STATE;
+}
+
+std::string CPPotify::getScope() {
+    return this->SCOPE;
+}
+
+bool CPPotify::getShowDialog() {
+    return this->SHOW_DIALOG;
+}
+
+std::string CPPotify::getToken() {
+    return this->TOKEN;
 }
 
 PYBIND11_MODULE(pybind11module, cpp) {
@@ -315,5 +341,6 @@ PYBIND11_MODULE(pybind11module, cpp) {
             .def("getShows", &CPPotify::getShows)
             .def("getTracks", &CPPotify::getTracks)
             .def("browse", &CPPotify::browse)
-            .def("search", &CPPotify::search);
+            .def("search", &CPPotify::search)
+            .def("getToken", &CPPotify::getToken);
 };

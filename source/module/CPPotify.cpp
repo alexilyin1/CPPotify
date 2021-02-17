@@ -2,6 +2,7 @@
 #include <regex>
 #include <array>
 #include <typeinfo>
+#include <algorithm>
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
 #include <pybind11/stl.h>
@@ -16,8 +17,8 @@ CPPotify::CPPotify(std::string ID, std::string SECRET) : CLIENT_ID(ID), CLIENT_S
     this->ac = ac;
 }
 
-CPPotify::CPPotify(std::string ID, std::string SECRET, std::string oAuthToken, std::string REDIRECT_URI, std::string STATE, std::string SCOPE, bool SHOW_DIALOG) : CLIENT_ID(ID), CLIENT_SECRET(SECRET), oAuthToken(oAuthToken), REDIRECT_URI(REDIRECT_URI), STATE(STATE), SCOPE(SCOPE), SHOW_DIALOG(SHOW_DIALOG) {    
-    oAuth ac(this->CLIENT_ID, this->CLIENT_SECRET, this->oAuthToken, this->REDIRECT_URI, this->STATE, this->SCOPE, this->SHOW_DIALOG);
+CPPotify::CPPotify(std::string ID, std::string SECRET, std::string oAuthToken, std::string TOKEN, std::string REDIRECT_URI, std::string STATE, std::string SCOPE, bool SHOW_DIALOG) : CLIENT_ID(ID), CLIENT_SECRET(SECRET), oAuthToken(oAuthToken), TOKEN(TOKEN), REDIRECT_URI(REDIRECT_URI), STATE(STATE), SCOPE(SCOPE), SHOW_DIALOG(SHOW_DIALOG) {    
+    oAuth ac(this->CLIENT_ID, this->CLIENT_SECRET, this->oAuthToken, this->TOKEN, this->REDIRECT_URI, this->STATE, this->SCOPE, this->SHOW_DIALOG);
     this->TOKEN = ac.auth();
     this->ac = ac;
 }
@@ -29,11 +30,11 @@ size_t CPPotify::WriteCallback(void *contents, size_t size, size_t nmemb, void *
     return size * nmemb;
 }
 
-std::vector<std::string> CPPotify::curlGET(std::string spotifyObj, std::map<std::string, std::string> payload, std::string query) {
-    std::cout << payload["self"] << endl;
+std::vector<std::string> CPPotify::curlGET(std::string spotifyObj, std::map<std::string, std::string> payload) {
+    std::string selfStr = (payload["self"] == "1" && payload["obj"] != "") ? "me/" + spotifyObj : "me";
     std::string spotifyObjStr = (payload["self"] == "1") ? "me/" + spotifyObj : spotifyObj;
     std::string idStr = (payload["id"].size() <= 22) ? "/" + payload["id"] : "/ids=" + payload["id"];
-    std::string payloadStr = spotifyObjStr + idStr;
+    std::string payloadStr = (payload["self"] == "1" && payload["obj"] == "") ? selfStr : spotifyObjStr + idStr;
 
     if (payload["obj"] != "") {
         payloadStr = payloadStr + "/" + payload["obj"] + "?";
@@ -96,6 +97,71 @@ std::vector<std::string> CPPotify::curlGET(std::string spotifyObj, std::map<std:
     return std::vector<std::string> {targetURL, res};
 }
 
+std::vector<std::string> CPPotify::curlPOST(std::string spotifyObj, std::map<std::string, std::string> payload) { 
+    std::string spotifyObjStr = spotifyObj;
+    std::string idStr = "/" + payload["id"];
+    std::string payloadStr = spotifyObjStr + idStr;
+
+    if (payload["obj"] != "") {
+        payloadStr = payloadStr + "/" + payload["obj"] + "?";
+    }
+    else {
+        payloadStr = payloadStr + "?";
+    }
+
+    auto it1 = payload.find("obj");
+    auto it2 = payload.find("id");
+
+    payload.erase(it1);
+    payload.erase(it2);
+    
+    auto it = payload.begin();
+    while (it != payload.end()) {
+        if (it->second != "") {
+            payloadStr = payloadStr + it->first + "=" + it->second;
+
+            if (std::next(it, 1) != payload.end()) {
+                payloadStr = payloadStr + "&";
+            }
+        }
+
+        it++;
+    }
+
+    std::string targetURL = "https://api.spotify.com/v1/" + payloadStr;
+    
+    /* Logging  */
+    std::cout << targetURL << std::endl;
+
+    CURL *curl;
+    std::string res;
+    
+    curl = curl_easy_init();
+    if(curl) {
+        try {
+            curl_easy_setopt(curl, CURLOPT_TCP_NODELAY, 0);
+            curl_easy_setopt(curl, CURLOPT_URL, "https://accounts.spotify.com/api/token");
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, this->WriteCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &res);
+            
+            struct curl_slist *authChunk = nullptr;            
+            authChunk = curl_slist_append(authChunk, "Accept: application/json");
+            authChunk = curl_slist_append(authChunk, "Content-Type: application/json");
+            authChunk = curl_slist_append(authChunk, ("Authorization: Bearer " + this->TOKEN).c_str());
+
+            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, authChunk);
+
+            curl_easy_perform(curl);
+            curl_easy_cleanup(curl);
+        }
+        catch (const char* Exception) {
+            std::cerr << Exception << std::endl;
+        }
+    }
+    
+    return std::vector<std::string> {targetURL, res};
+}
+
 std::vector<std::string> CPPotify::getAlbums(std::string albumID, std::string albumObj, int limit, int offset) { 
     if (albumObj != "" && albumObj != "tracks") {
         throw std::invalid_argument("Received invalid argument for album_obj argument, value " + albumObj + " must match 'tracks'");
@@ -147,14 +213,15 @@ std::vector<std::string> CPPotify::getEpisodes(std::string episodeID) {
     return this->curlGET("episodes", payload);
 }
 
-std::vector<std::string> CPPotify::getPlayer(std::string playerObj) {
+std::vector<std::string> CPPotify::getPlayer(std::string playerObj, std::string deviceID) {
     if (playerObj != "" && (playerObj != "devices" && playerObj != "currently-playing" && playerObj != "recently-played")) {
         throw std::invalid_argument("Received invalid player_obj argument, value " + playerObj + " must be equal to 'devices', 'currently-playing' or 'recently-player");
     }
 
     std::map<std::string, std::string> payload{
         {"self", "0"},
-        {"obj", playerObj}};
+        {"obj", playerObj},
+        {"device_id", deviceID}};
 
     return this->curlGET("player", payload);
 }
@@ -295,6 +362,20 @@ std::vector<std::string> CPPotify::search(std::string query, std::string objType
     return this->curlGET("search", payload);
 }
 
+std::vector<std::string> CPPotify::postPlayer(std::string playerAction, std::string songURI, std::string deviceID) {
+    if (playerAction != "next" && playerAction != "previous" && playerAction != "queue") {
+        throw std::invalid_argument("Received invalid argument for player_action argument, value " + playerAction + " must be equal to 'next', 'previous' or 'queue'");
+    }
+
+    std::map<std::string, std::string> payload{
+        {"self", "0"},
+        {"obj", playerAction},
+        {"uri", songURI},
+        {"device_id", deviceID}};
+
+    return this->curlPOST("player", payload);
+}
+
 std::string CPPotify::getClientID() {
     return this->CLIENT_ID;
 }
@@ -330,11 +411,11 @@ PYBIND11_MODULE(pybind11module, cpp) {
     cpp.doc() = "CPPotify Module - Python Spotify API using C++";
     py::class_<CPPotify>(cpp, "CPPotify")
             .def(py::init<std::string, std::string>())
-            .def(py::init<std::string, std::string, std::string, std::string, std::string, std::string, bool>())
+            .def(py::init<std::string, std::string, std::string, std::string, std::string, std::string, std::string, bool>())
             .def("curlGET", &CPPotify::curlGET)
             .def("getAlbums", &CPPotify::getAlbums)
             .def("getArtists", &CPPotify::getArtists)
-            .def("getEpisodes", &CPPotify::getShows)
+            .def("getEpisodes", &CPPotify::getEpisodes)
             .def("getPlayer", &CPPotify::getPlayer)
             .def("getPlaylists", &CPPotify::getPlaylists)
             .def("getProfiles", &CPPotify::getProfiles)
@@ -342,5 +423,6 @@ PYBIND11_MODULE(pybind11module, cpp) {
             .def("getTracks", &CPPotify::getTracks)
             .def("browse", &CPPotify::browse)
             .def("search", &CPPotify::search)
+            .def("postPlayer", &CPPotify::postPlayer)
             .def("getToken", &CPPotify::getToken);
 };

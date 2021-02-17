@@ -28,7 +28,7 @@ public:
 
     virtual std::string auth();
 
-    virtual void setToken(std::string token);
+    std::string setToken(std::string token);
     std::string getClientID();
     std::string getClientSecret();
     std::string getToken();
@@ -45,15 +45,15 @@ public:
 class oAuth : public authControl {
 private:
     std::string oAuthToken;
+    std::string TOKEN;
     std::string REDIRECT_URI; 
     std::string STATE;
     std::string SCOPE; 
     bool SHOW_DIALOG;
 
 public:
-    oAuth(std::string CLIENT_ID, std::string CLIENT_SECRET, std::string oAuthToken, std::string REDIRECT_URI, std::string STATE = "34fFs29kd09", std::string SCOPE = "user-read-private user-read-email", bool SHOW_DIALOG = false);
+    oAuth(std::string CLIENT_ID, std::string CLIENT_SECRET, std::string oAuthToken, std::string TOKEN, std::string REDIRECT_URI, std::string STATE = "34fFs29kd09", std::string SCOPE = "user-read-private user-read-email", bool SHOW_DIALOG = false);
 
-    void setToken(std::string token);
     std::string getAuthToken();
     std::string getRedirectURI();
     std::string getState();

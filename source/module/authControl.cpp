@@ -103,8 +103,8 @@ std::string authControl::auth() {
     return to_string(j["access_token"]);
 }
 
-void authControl::setToken(std::string token) {
-    this->TOKEN = token;
+std::string authControl::setToken(std::string token) {
+    return token;
 }
 
 std::string authControl::getClientID() {
@@ -130,8 +130,9 @@ bool authControl::checkAuth() {
 
 clientCredentials::clientCredentials(std::string ID, std::string SECRET) : authControl(ID, SECRET) {}
 
-oAuth::oAuth(std::string ID, std::string SECRET, std::string oAuthToken, std::string REDIRECT_URI, std::string STATE, std::string SCOPE, bool SHOW_DIALOG) : authControl(ID, SECRET) {
+oAuth::oAuth(std::string ID, std::string SECRET, std::string oAuthToken, std::string TOKEN, std::string REDIRECT_URI, std::string STATE, std::string SCOPE, bool SHOW_DIALOG) : authControl(ID, SECRET) {
     this->oAuthToken = oAuthToken; 
+    this->TOKEN = this->setToken(TOKEN);
     this->REDIRECT_URI = REDIRECT_URI;
     this->STATE = STATE;
     this->SCOPE = SCOPE;

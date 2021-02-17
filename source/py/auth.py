@@ -91,7 +91,7 @@ class oAuth:
 
         payload ={
             'refresh_token': self.REFRESH_TOKEN,
-            'grant_type': 'authorization_code'
+            'grant_type': 'refresh_token'
         }
 
         headers = {
@@ -101,7 +101,7 @@ class oAuth:
         response = json.loads(
             requests.post(base_url, data=payload, headers=headers).text
         )
-
+        
         try:
             self.TOKEN = response['access_token']
         except KeyError:

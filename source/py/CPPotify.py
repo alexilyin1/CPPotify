@@ -55,20 +55,28 @@ class CPPotify:
 
         if REDIRECT_URI != "" and STATE != "" and SCOPE != "":
             self.oAuth = oAuth(self.CLIENT_ID, self.CLIENT_SECRET, self.REDIRECT_URI, self.STATE, self.SCOPE, self.SHOW_DIALOG)
+            self.oAuth.set_client()
             self._cpp_obj = None
         else:
             self._cpp_obj = pybind11module.CPPotify(self.CLIENT_ID, self.CLIENT_SECRET)
         
         self.TOKEN_start = datetime.now()
 
+    def open_browser(self):
+        if self.oAuth:
+            self.oAuth.open_auth_url()
+
     def oAuth_flow(self, url):
         if not self.oAuth:
             return "CPPotify object initialized with Client Credentials authorization. Initialize the object with necessary oAuth arguments before proceeding"
         
         self.oAuth.set_oAuth_token(url)
-        self.oAuthToken = self.oAuth.TOKEN
+        self.oAuth.set_token()
+
+        self.oAuthToken = self.oAuth.auth_token
+        self.TOKEN = self.oAuth.TOKEN
         
-        self._cpp_obj = pybind11module.CPPotify(self.CLIENT_ID, self.CLIENT_SECRET, self.oAuthToken, self.REDIRECT_URI, self.STATE, self.SCOPE, self.SHOW_DIALOG)
+        self._cpp_obj = pybind11module.CPPotify(self.CLIENT_ID, self.CLIENT_SECRET, self.oAuthToken, self.TOKEN, self.REDIRECT_URI, self.STATE, self.SCOPE, self.SHOW_DIALOG)
 
     def get_albums(self, album_id: [list, str], album_obj = '', limit = 50, offset = 0):
         """
@@ -342,6 +350,35 @@ class CPPotify:
             call[0],
             datetime.now()
         ) 
+
+    def post_player(self, player_action, song_uri = '', device_id = ''):
+        """
+        Send commands to the Spotify Player
+        
+        :param player_action: Action for the Spotify Player to complete. Must be set to 'next', 'previous', or 'queue'
+        :param song_uri: If adding a song to the queue, enter the song URI here. NOTE: this must be a Spotify URI NOT an ID
+        :param device_id: If modifying the Player on a certain device, enter the device ID here
+
+        :returns Call to relevant C++ class method
+
+        :raises ValueError if player_action is not 'next', 'previous', or 'queue'
+        """
+        if not self.oAuth:
+            warnings.warn(
+                "This operation will not complete with the current level of user authentication. Visit the Spotify developer documentation for more information",
+                category=RuntimeWarning
+            )
+
+        self._token_check()
+
+        call = self._cpp_obj.postPlayer(player_action, song_uri, device_id)
+
+        return self._parse_errors(
+            json.loads(call[1]),
+            'player',
+            call[0],
+            datetime.now()
+        )
             
     def _token_check(self):
         """
@@ -351,19 +388,30 @@ class CPPotify:
             seconds_after_start = (datetime.now() - self.TOKEN_start).seconds
             if seconds_after_start >= 3000 and seconds_after_start < 3600:
                 warnings.warn(
-                    'Spotify token nearing expiration. This class will generate a new Spotify token when the token expires'
-                    )
+                    "Spotify token nearing expiration. This class will generate a new Spotify token when the token expires"
+                )
             elif seconds_after_start >= 3600:
                 warnings.warn(
-                    'Spotify token has expired. No action needed, generating new token...'
-                    )
+                    "Spotify token has expired. No action needed, generating new token..."
+                )
                 self._cpp_obj.ac.auth()
                 self.TOKEN_start = datetime.now()
 
-                warnings.warn('New Spotify token created')
+                warnings.warn("New Spotify token created")
         else:
-            self.oAuth.new_token()
-            self.TOKEN_start = datetime.now()
+            seconds_after_start = (datetime.now() - self.TOKEN_start).seconds
+            if seconds_after_start >= 3000 and seconds_after_start < 3600:
+                warnings.warn(
+                    "Spotify token nearing expiration. This class will generate a new Spotify token when the token expires"
+                )
+            elif seconds_after_start >= 3600:
+                warnings.warn(
+                    "Spotify token has expired. No action needed, generating new token..."
+                )
+                self.oAuth.new_token()
+                self.TOKEN_start = datetime.now()
+
+                warnings.warn("New Spotify token created")
 
     def _parse_errors(self, response: dict, obj, request_url, timestamp: datetime):
         """
@@ -372,7 +420,8 @@ class CPPotify:
         :param response: The response being parse for an error
         :param obj: Spotify object that generated the response
         :param timestamp: Timestamp of the request 
-        @return error_obj: Detailed error object containing error code, error reason, error message, Spotify object, Spotify request URL and timestamp
+        
+        :return error_obj: Detailed error object containing error code, error reason, error message, Spotify object, Spotify request URL and timestamp
         """
         response_map = {
             '200': 'OK',

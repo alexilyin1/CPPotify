@@ -101,7 +101,7 @@ class CPPotify:
             call = self._cpp_obj.getAlbums(album_id, album_obj, limit, offset)
 
         return self._parse_errors(
-            json.loads(call[1]),
+            call[1],
             'albums',
             call[0],
             datetime.now() 
@@ -132,7 +132,7 @@ class CPPotify:
             call = self._cpp_obj.getArtists(artist_id, artist_obj, include_groups, limit, offset)
 
         return self._parse_errors(
-            json.loads(call[1]),
+            call[1],
             'artists',
             call[0],
             datetime.now() 
@@ -156,7 +156,7 @@ class CPPotify:
             call = self._cpp_obj.getEpisodes(episode_id)
 
         return self._parse_errors(
-            json.loads(call[1]),
+            call[1],
             'episodes',
             call[0],
             datetime.now() 
@@ -180,7 +180,7 @@ class CPPotify:
         call = self._cpp_obj.getPlayer(player_obj)
 
         return self._parse_errors(
-            json.loads(call[1]),
+            call[1],
             'player',
             call[0],
             datetime.now()
@@ -217,7 +217,7 @@ class CPPotify:
         call = self._cpp_obj.getPlaylists(get_own_playlists, user_id, playlist_id, playlist_obj, fields, limit, offset)
 
         return self._parse_errors(
-            json.loads(call[1]),
+            call[1],
             'playlists',
             call[0],
             datetime.now() 
@@ -235,13 +235,13 @@ class CPPotify:
         self._token_check()
 
         return self._parse_errors(
-            json.loads(self._cpp_obj.getProfiles(get_own_profile, user_id)[1]),
+            self._cpp_obj.getProfiles(get_own_profile, user_id)[1],
             'profiles',
             self._cpp_obj.getProfiles(get_own_profile, user_id)[0],
             datetime.now()
         ) 
 
-    def get_shows(self, show_id: [list, str], show_obj):
+    def get_shows(self, show_id: [list, str], show_obj = ''):
         """
         Return information about Spotify Shows
 
@@ -260,20 +260,19 @@ class CPPotify:
             call = self._cpp_obj.getShows(show_id, show_obj)
 
         return self._parse_errors(
-            json.loads(call[1]),
+            call[1],
             'shows',
             call[0],
             datetime.now()
         ) 
 
-    def get_tracks(self, track_id: [list, str], track_obj):
+    def get_tracks(self, track_id: [list, str], track_obj = ''):
         """
         Return information about Spotify songs/tracks
 
-        :param Audio_analysis: Bool, set to True if you returning audio analysis and features. Audio analysis/features for one 
-                               song is returned as a nested Json
         :param track_id: Identifies the song/track for which information will be requested. If requesting for multiple tracks, input a 
                        list of IDs
+        :param track_obj: Optional, can be either 'audio-analysis' or 'audio-features'. If left blank will return track information
 
         :returns Call to relevant C++ class method
 
@@ -288,7 +287,7 @@ class CPPotify:
             call = self._cpp_obj.getTracks(track_id, track_obj)
 
         return self._parse_errors(
-            json.loads(call[1]),
+            call[1],
             'tracks',
             call[0],
             datetime.now()
@@ -311,7 +310,7 @@ class CPPotify:
         call = self._cpp_obj.browse(browse_category, category_id, category_obj, str(timestamp).replace(' ', 'T').replace(':', '%3A').split('.')[0], limit, offset)
 
         return self._parse_errors(
-            json.loads(call[1]),
+            call[1],
             'browse',
             call[0],
             datetime.now()
@@ -345,7 +344,7 @@ class CPPotify:
             call = self._cpp_obj.search(query, obj_type, filt, limit, offset)
 
         return self._parse_errors(
-            json.loads(call[1]),
+            call[1],
             'search',
             call[0],
             datetime.now()
@@ -371,10 +370,10 @@ class CPPotify:
 
         self._token_check()
 
-        call = self._cpp_obj.postPlayer(player_action, song_uri, device_id)
+        call = self._cpp_obj.postPlayer(player_action, song_uri.replace(':', '&3A'), device_id)
 
         return self._parse_errors(
-            json.loads(call[1]),
+            call[1],
             'player',
             call[0],
             datetime.now()
@@ -413,14 +412,14 @@ class CPPotify:
 
                 warnings.warn("New Spotify token created")
 
-    def _parse_errors(self, response: dict, obj, request_url, timestamp: datetime):
+    def _parse_errors(self, response: str, obj, request_url, timestamp: datetime):
         """
         Returns a more detailed error object
 
         :param response: The response being parse for an error
         :param obj: Spotify object that generated the response
         :param timestamp: Timestamp of the request 
-        
+
         :return error_obj: Detailed error object containing error code, error reason, error message, Spotify object, Spotify request URL and timestamp
         """
         response_map = {
@@ -439,6 +438,7 @@ class CPPotify:
             '503': 'Service Unavailable'
         }
         try:
+            response = json.loads(response)
             if 'error' in response.keys():
                 try:
                     print("""Found error in response. \n
@@ -463,4 +463,13 @@ class CPPotify:
             else:
                 return response
         except:
-            return response
+            print("""Found error in response. \n
+                             URL: {} \n
+                             Message: {} \n """.\
+                        format(request_url,
+                               response))
+
+            return {'response': response,
+                    'request_obj': obj,
+                    'request_url': request_url, 
+                    'time': str(timestamp)}

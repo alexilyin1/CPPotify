@@ -163,7 +163,11 @@ CPPotify.h
 /home/amt99/Desktop/CPPotify/source/module/CPPotify.h
 regex
 -
+array
+-
 typeinfo
+-
+algorithm
 -
 curl/curl.h
 -

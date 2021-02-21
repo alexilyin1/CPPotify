@@ -17,11 +17,7 @@ CPPotify::CPPotify(std::string ID, std::string SECRET) : CLIENT_ID(ID), CLIENT_S
     this->ac = ac;
 }
 
-CPPotify::CPPotify(std::string ID, std::string SECRET, std::string oAuthToken, std::string TOKEN, std::string REDIRECT_URI, std::string STATE, std::string SCOPE, bool SHOW_DIALOG) : CLIENT_ID(ID), CLIENT_SECRET(SECRET), oAuthToken(oAuthToken), TOKEN(TOKEN), REDIRECT_URI(REDIRECT_URI), STATE(STATE), SCOPE(SCOPE), SHOW_DIALOG(SHOW_DIALOG) {    
-    oAuth ac(this->CLIENT_ID, this->CLIENT_SECRET, this->oAuthToken, this->TOKEN, this->REDIRECT_URI, this->STATE, this->SCOPE, this->SHOW_DIALOG);
-    this->TOKEN = ac.auth();
-    this->ac = ac;
-}
+CPPotify::CPPotify(std::string ID, std::string SECRET, std::string oAuthToken, std::string TOKEN, std::string REDIRECT_URI, std::string STATE, std::string SCOPE, bool SHOW_DIALOG) : CLIENT_ID(ID), CLIENT_SECRET(SECRET), oAuthToken(oAuthToken), TOKEN(TOKEN), REDIRECT_URI(REDIRECT_URI), STATE(STATE), SCOPE(SCOPE), SHOW_DIALOG(SHOW_DIALOG) {}
 
 CPPotify::~CPPotify() {}
 
@@ -98,40 +94,41 @@ std::vector<std::string> CPPotify::curlGET(std::string spotifyObj, std::map<std:
 }
 
 std::vector<std::string> CPPotify::curlPOST(std::string spotifyObj, std::map<std::string, std::string> payload) { 
-    std::string spotifyObjStr = spotifyObj;
-    std::string idStr = "/" + payload["id"];
-    std::string payloadStr = spotifyObjStr + idStr;
+    std::string spotifyObjStr = "me/" + spotifyObj;
+    std::string payloadStr = spotifyObjStr;
 
     if (payload["obj"] != "") {
         payloadStr = payloadStr + "/" + payload["obj"] + "?";
     }
     else {
-        payloadStr = payloadStr + "?";
+        payloadStr = payloadStr;
     }
 
-    auto it1 = payload.find("obj");
-    auto it2 = payload.find("id");
+    auto it2 = payload.find("obj");
 
-    payload.erase(it1);
     payload.erase(it2);
     
-    auto it = payload.begin();
-    while (it != payload.end()) {
-        if (it->second != "") {
-            payloadStr = payloadStr + it->first + "=" + it->second;
+    std::string POSTFIELDS = "";
+    if (payload.size() > 0) {
+        auto it = payload.begin();
+        while (it != payload.end()) {
+            if (it->second != "") {
+                POSTFIELDS = POSTFIELDS + it->first + "=" + it->second;
 
-            if (std::next(it, 1) != payload.end()) {
-                payloadStr = payloadStr + "&";
+                if (std::next(it, 1) != payload.end()) {
+                    POSTFIELDS = POSTFIELDS + "&";
+                }
             }
-        }
 
-        it++;
+            it++;
+        }
     }
 
-    std::string targetURL = "https://api.spotify.com/v1/" + payloadStr;
-    
+    std::string targetURL = "https://api.spotify.com/v1/" + payloadStr + POSTFIELDS;
+
     /* Logging  */
     std::cout << targetURL << std::endl;
+    std::cout << POSTFIELDS << std::endl;
 
     CURL *curl;
     std::string res;
@@ -140,7 +137,9 @@ std::vector<std::string> CPPotify::curlPOST(std::string spotifyObj, std::map<std
     if(curl) {
         try {
             curl_easy_setopt(curl, CURLOPT_TCP_NODELAY, 0);
-            curl_easy_setopt(curl, CURLOPT_URL, "https://accounts.spotify.com/api/token");
+            curl_easy_setopt(curl, CURLOPT_URL, targetURL.c_str());
+            curl_easy_setopt(curl, CURLOPT_POST, 1);
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, this->WriteCallback);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &res);
             
@@ -259,6 +258,10 @@ std::vector<std::string> CPPotify::getProfiles(bool getOwnProfile, std::string u
 }
 
 std::vector<std::string> CPPotify::getShows(std::string showID, std::string showObj) {
+    if (showObj != "episodes") {
+        throw std::invalid_argument("Received invalid show_obj argument, value " + showObj + " must be equal to 'episodes'");
+    }
+    
     if (showID.size() > 1150) {
         throw std::length_error("Exceeded limit of 50 Spotify IDs");
     }
@@ -272,8 +275,8 @@ std::vector<std::string> CPPotify::getShows(std::string showID, std::string show
 }
 
 std::vector<std::string> CPPotify::getTracks(std::string trackID, std::string trackObj){
-    if (trackObj != "audio-analysis" && trackObj != "audio-features" && trackObj != "tracks") {
-        throw std::invalid_argument("Received invalid track_obj argument, value " + trackObj + " must match 'audio-analysis', 'audio-features' or 'tracks'");
+    if (trackObj != "" && trackObj != "audio-analysis" && trackObj != "audio-features") {
+        throw std::invalid_argument("Received invalid track_obj argument, value " + trackObj + " must match 'audio-analysis' or 'audio-features'. If left blank will default to 'tracks'");
     }
 
     if (trackID.size() > 1150) {
@@ -281,15 +284,15 @@ std::vector<std::string> CPPotify::getTracks(std::string trackID, std::string tr
     }
 
     if (trackID.size() > 22 && trackObj == "audio-analysis") {
-        throw std::invalid_argument("Spotify API does not return audio-analysis results when returning multiple tracks");
+        throw std::invalid_argument("Spotify API does not return audio-analysis results for multiple tracks");
     }
 
     std::map<std::string, std::string> payload{
         {"self", "0"},
         {"id", trackID},
-        {"obj", trackObj}};
+        {"obj", ""}};
 
-    return this->curlGET("tracks", payload);
+    return this->curlGET(trackObj, payload);
 }
 
 std::vector<std::string> CPPotify::browse(std::string browseCategory, std::string categoryID, std::string categoryObj, std::string timestamp, int limit, int offset) {
@@ -368,7 +371,6 @@ std::vector<std::string> CPPotify::postPlayer(std::string playerAction, std::str
     }
 
     std::map<std::string, std::string> payload{
-        {"self", "0"},
         {"obj", playerAction},
         {"uri", songURI},
         {"device_id", deviceID}};

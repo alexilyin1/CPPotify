@@ -28,10 +28,16 @@ size_t CPPotify::WriteCallback(void *contents, size_t size, size_t nmemb, void *
 
 std::vector<std::string> CPPotify::curlGET(std::string spotifyObj, std::map<std::string, std::string> payload) {
     std::string selfStr = (payload["self"] == "1" && payload["obj"] != "") ? "me/" + spotifyObj : "me";
-    std::string spotifyObjStr = (payload["self"] == "1") ? "me/" + spotifyObj : spotifyObj;
-    std::string idStr = (payload["id"].size() <= 22) ? "/" + payload["id"] : "/ids=" + payload["id"];
-    std::string payloadStr = (payload["self"] == "1" && payload["obj"] == "") ? selfStr : spotifyObjStr + idStr;
 
+    std::string spotifyObjStr = (payload["self"] == "1") ? "me/" + spotifyObj : spotifyObj;
+    
+    std::string idStr = "";
+    if (payload["id"] != "") {
+        idStr = (payload["id"].size() <= 22) ? "/" + payload["id"] : "/ids=" + payload["id"];
+    }
+
+    std::string payloadStr = (payload["self"] == "1" && payload["obj"] == "") ? selfStr : spotifyObjStr + idStr;
+    
     if (payload["obj"] != "") {
         payloadStr = payloadStr + "/" + payload["obj"] + "?";
     }
@@ -95,6 +101,7 @@ std::vector<std::string> CPPotify::curlGET(std::string spotifyObj, std::map<std:
 
 std::vector<std::string> CPPotify::curlPOST(std::string spotifyObj, std::map<std::string, std::string> payload) { 
     std::string spotifyObjStr = "me/" + spotifyObj;
+    
     std::string payloadStr = spotifyObjStr;
 
     if (payload["obj"] != "") {
@@ -304,22 +311,22 @@ std::vector<std::string> CPPotify::browse(std::string browseCategory, std::strin
         throw std::invalid_argument("Recevied invalid argument for category_obj argument, value " + categoryObj + " must be equal to 'playlists'");
     }
 
-    std::string categoryStr;
     if (browseCategory == "categories" && categoryObj != "") {
-        categoryStr = categoryID + "/" + categoryObj;
+        browseCategory = browseCategory + "/" + categoryID + "/" + categoryObj;
     }
-    else {
-        categoryStr = categoryID;
+    else if (browseCategory == "categories") {
+        browseCategory = browseCategory + "/" + categoryID;
     }
 
     std::map<std::string, std::string> payload{
         {"self", "0"},
-        {"id", categoryStr},
-        {"timestamp", timestamp},
+        {"id", ""},
+        {"obj", browseCategory},
+        {"timestamp", (browseCategory == "featured-playlists") ? timestamp : ""},
         {"limit", to_string(limit)},
         {"offset", to_string(offset)}};
 
-    return this->curlGET(browseCategory, payload);
+    return this->curlGET("browse", payload);
 }
 
 std::vector<std::string> CPPotify::search(std::string query, std::string objType, std::map<std::string, std::string> filt, int limit, int offset) {
@@ -378,6 +385,11 @@ std::vector<std::string> CPPotify::postPlayer(std::string playerAction, std::str
     return this->curlPOST("player", payload);
 }
 
+std::string CPPotify::reAuth() {
+    this->TOKEN = ac.auth();
+    return this->TOKEN;
+}
+
 std::string CPPotify::getClientID() {
     return this->CLIENT_ID;
 }
@@ -426,5 +438,6 @@ PYBIND11_MODULE(pybind11module, cpp) {
             .def("browse", &CPPotify::browse)
             .def("search", &CPPotify::search)
             .def("postPlayer", &CPPotify::postPlayer)
-            .def("getToken", &CPPotify::getToken);
+            .def("getToken", &CPPotify::getToken)
+            .def("reAuth", &CPPotify::reAuth);
 };

@@ -59,6 +59,7 @@ class CPPotify:
             self._cpp_obj = None
         else:
             self._cpp_obj = pybind11module.CPPotify(self.CLIENT_ID, self.CLIENT_SECRET)
+            self.TOKEN = self._cpp_obj.getToken()
         
         self.TOKEN_start = datetime.now()
 
@@ -393,7 +394,7 @@ class CPPotify:
                 warnings.warn(
                     "Spotify token has expired. No action needed, generating new token..."
                 )
-                self._cpp_obj.ac.auth()
+                self.TOKEN = self._cpp_obj.reAuth()
                 self.TOKEN_start = datetime.now()
 
                 warnings.warn("New Spotify token created")

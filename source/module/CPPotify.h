@@ -25,7 +25,7 @@ public:
     Constructors and Destructors
     */
     CPPotify(std::string ID, std::string SECRET);
-    CPPotify(std::string ID, std::string SECRET, std::string oAuthToken, std::string TOKEN, std::string REDIRECT_URI = "", std::string STATE = "34fFs29kd09", std::string SCOPE = "user-read-private user-read-email", bool SHOW_DIALOG = false);
+    CPPotify(std::string ID, std::string SECRET, std::string oAuthToken, std::string REDIRECT_URI = "", std::string STATE = "34fFs29kd09", std::string SCOPE = "user-read-private user-read-email", bool SHOW_DIALOG = false);
     ~CPPotify();
 
     /* 

@@ -2,6 +2,7 @@ import sys
 import os
 import json
 import warnings
+import webbrowser
 from datetime import datetime
 
 sys.path.insert(0, os.path.join(os.path.abspath('../../'), 'build/'))
@@ -24,8 +25,8 @@ class CPPotify:
     Example oAuth 2.0 flow:
 
         cpp = CPPotify('your client id', 'your client secret', 'your redirect URI as set in your Spotify API profile', 'state', 'scope', True/False)
-        cpp.oAuth_flow() <- Warning: This method will open a URL in your default browser. See source/py/oAuth for additional details
-        cpp.oAuth_set_token('url after enabling auth') 
+        cpp.open_auth_url() <- Warning: This method will open a URL in your default browser. See source/py/oAuth for additional details
+        cpp.oAuth_flow('url after enabling auth') 
         cpp.get_albums('spotify id for album you want to request', 'tracks')
 
     get_albums: Get Spotify Album tracks/attributes
@@ -49,35 +50,64 @@ class CPPotify:
         self.STATE = STATE
         self.SCOPE = SCOPE 
         self.SHOW_DIALOG = SHOW_DIALOG
+        self.auth_url = None
         self.TOKEN = None
         self.oAuth = None
         self.oAuthToken = None
 
         if REDIRECT_URI != "" and STATE != "" and SCOPE != "":
-            self.oAuth = oAuth(self.CLIENT_ID, self.CLIENT_SECRET, self.REDIRECT_URI, self.STATE, self.SCOPE, self.SHOW_DIALOG)
-            self.oAuth.set_client()
+            # self.oAuth = oAuth(self.CLIENT_ID, self.CLIENT_SECRET, self.REDIRECT_URI, self.STATE, self.SCOPE, self.SHOW_DIALOG)
+            
+            self.auth_url = "https://accounts.spotify.com/authorize?"
+            params = {
+                'client_id': self.CLIENT_ID,
+                'response_type': 'code',
+                'redirect_uri': self.REDIRECT_URI,
+                'state': self.STATE,
+                'scope': self.SCOPE,
+                'show_dialog': str(self.SHOW_DIALOG)
+            }
+
+            for k in params:
+                self.auth_url += k + '=' + params[k]
+                if list(params.keys())[-1] != k:
+                    self.auth_url += '&'
+            
             self._cpp_obj = None
+            
         else:
             self._cpp_obj = pybind11module.CPPotify(self.CLIENT_ID, self.CLIENT_SECRET)
             self.TOKEN = self._cpp_obj.getToken()
         
         self.TOKEN_start = datetime.now()
 
-    def open_browser(self):
-        if self.oAuth:
-            self.oAuth.open_auth_url()
+    def open_auth_url(self):
+        if self.auth_url:
+            webbrowser.open(self.auth_url)
 
     def oAuth_flow(self, url):
-        if not self.oAuth:
-            return "CPPotify object initialized with Client Credentials authorization. Initialize the object with necessary oAuth arguments before proceeding"
-        
+        if self.auth_url:
+            try:
+                if not self.REDIRECT_URI in url:
+                    return "Invalid URL provided, must use valid redirect URL containing access code"
+                
+                if 'error' in url:
+                    return "Error when authorizing user. Try again and check your credentials"
+
+                code = url.split('code=')[1].split('&')[0]
+                self.auth_token = code
+            except:
+                return "Invalid redirect URL"
+
+            self._cpp_obj = pybind11module.CPPotify(self.CLIENT_ID, self.CLIENT_SECRET, self.auth_token, self.REDIRECT_URI, self.STATE, self.SCOPE, self.SHOW_DIALOG)
+        '''             
         self.oAuth.set_oAuth_token(url)
         self.oAuth.set_token()
 
         self.oAuthToken = self.oAuth.auth_token
         self.TOKEN = self.oAuth.TOKEN
         
-        self._cpp_obj = pybind11module.CPPotify(self.CLIENT_ID, self.CLIENT_SECRET, self.oAuthToken, self.TOKEN, self.REDIRECT_URI, self.STATE, self.SCOPE, self.SHOW_DIALOG)
+        self._cpp_obj = pybind11module.CPPotify(self.CLIENT_ID, self.CLIENT_SECRET, self.oAuthToken, self.TOKEN, self.REDIRECT_URI, self.STATE, self.SCOPE, self.SHOW_DIALOG)'''
 
     def get_albums(self, album_id: [list, str], album_obj = '', limit = 50, offset = 0):
         """

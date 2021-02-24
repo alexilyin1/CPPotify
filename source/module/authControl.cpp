@@ -8,7 +8,9 @@ authControl::authControl() {}
 
 authControl::authControl(std::string ID) : CLIENT_ID(ID) {}
 
-authControl::authControl(std::string ID, std::string SECRET) : CLIENT_ID(ID), CLIENT_SECRET(SECRET) {}
+authControl::authControl(std::string ID, std::string SECRET) : CLIENT_ID(ID), CLIENT_SECRET(SECRET) {
+    this->TOKEN = this->auth()[0];
+}
 
 authControl::~authControl() {}
 
@@ -69,7 +71,7 @@ size_t authControl::WriteCallback(void *contents, size_t size, size_t nmemb, voi
     return size * nmemb;
 }
 
-std::string authControl::auth() {
+std::vector<std::string> authControl::auth() {
     CURL *curl;
     std::string res;
 
@@ -100,11 +102,11 @@ std::string authControl::auth() {
     }
 
     auto j = nlohmann::json::parse(res);
-    return to_string(j["access_token"]);
+    return std::vector<std::string> {to_string(j["access_token"])};
 }
 
-std::string authControl::setToken(std::string token) {
-    return token;
+std::string authControl::setToken() {
+    return this->auth()[0];
 }
 
 std::string authControl::getClientID() {
@@ -120,7 +122,7 @@ std::string authControl::getToken() {
         return "Authorization not completed, use the auth() method before continuing";
     }
     else {
-        return "code=" + this->TOKEN;
+        return this->TOKEN;
     }
 }
 
@@ -130,21 +132,88 @@ bool authControl::checkAuth() {
 
 clientCredentials::clientCredentials(std::string ID, std::string SECRET) : authControl(ID, SECRET) {}
 
-oAuth::oAuth(std::string ID, std::string SECRET, std::string oAuthToken, std::string TOKEN, std::string REDIRECT_URI, std::string STATE, std::string SCOPE, bool SHOW_DIALOG) : authControl(ID, SECRET) {
+oAuth::oAuth(std::string ID, std::string SECRET, std::string oAuthToken, std::string REDIRECT_URI, std::string STATE, std::string SCOPE, bool SHOW_DIALOG) : authControl(ID, SECRET) {
     this->oAuthToken = oAuthToken; 
-    this->TOKEN = this->setToken(TOKEN);
     this->REDIRECT_URI = REDIRECT_URI;
     this->STATE = STATE;
     this->SCOPE = SCOPE;
     this->SHOW_DIALOG = SHOW_DIALOG;
+
+    std::vector<std::string> tokens = this->auth();
+    this->TOKEN = tokens[0];
+    this->REFRESH_TOKEN = tokens[1];
+}
+
+std::string urlEncEasy(std::string url) {
+    std::string res;
+
+    for (auto c : url) {
+        if (c == ':') {
+            res += "%3A";
+        }
+        else if (c == '/') {
+            res += "%2F";
+        }
+        else {
+            res += c;
+        }
+    }
+    
+    return res;
+}
+
+std::vector<std::string> oAuth::auth() {
+    CURL *curl;
+    std::string res;
+
+    curl = curl_easy_init();
+    
+    if(curl) {
+        try {
+            curl_easy_setopt(curl, CURLOPT_TCP_NODELAY, 0);
+            curl_easy_setopt(curl, CURLOPT_URL, "https://accounts.spotify.com/api/token");
+
+            std::string body = "grant_type=authorization_code&code=" + this->getAuthToken() + "&redirect_uri=" + urlEncEasy(this->getRedirectURI());
+            std::cout << body << std::endl;
+
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());     
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, this->WriteCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &res);
+
+            std::string enc = this->base64_encode(reinterpret_cast<const unsigned char*>((this->getClientID() + ":" + this->getClientSecret()).data()), (this->getClientID() + ":" + this->getClientSecret()).length(), false);
+            
+            std::string encType = "Content-Type: application/x-www-form-urlencoded";
+            std::string httpAuth = "Authorization: Basic " + enc;
+            struct curl_slist *authChunk = nullptr;
+            authChunk = curl_slist_append(authChunk, encType.c_str());
+            authChunk = curl_slist_append(authChunk, httpAuth.c_str());
+
+            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, authChunk);
+
+            curl_easy_perform(curl);
+            curl_easy_cleanup(curl);
+        }
+        catch (const char* Exception) {
+            std::cerr << Exception << std::endl;
+        }
+    }
+
+    std::cout << res << std::endl;
+
+    auto j = nlohmann::json::parse(res);
+    return std::vector<std::string> {to_string(j["access_token"]), to_string(j["refresh_token"])};
+}
+
+std::string oAuth::getRedirectURI() {
+    return this->REDIRECT_URI;
 }
 
 std::string oAuth::getAuthToken() {
     return this->oAuthToken;
 }
 
-std::string oAuth::getRedirectURI() {
-    return "redirect_uri=" + this->REDIRECT_URI;
+std::string oAuth::getRefreshToken() {
+    return this->REFRESH_TOKEN;
 }
 
 std::string oAuth::getScope() {

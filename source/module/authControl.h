@@ -2,6 +2,7 @@
 #define AUTHCONTROL_H
 
 #include <string>
+#include <vector>
 
 /* Base Class */ 
 class authControl {
@@ -26,9 +27,9 @@ public:
 
     static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
 
-    virtual std::string auth();
+    virtual std::vector<std::string> auth();
 
-    std::string setToken(std::string token);
+    std::string setToken();
     std::string getClientID();
     std::string getClientSecret();
     std::string getToken();
@@ -50,11 +51,15 @@ private:
     std::string STATE;
     std::string SCOPE; 
     bool SHOW_DIALOG;
+    std::string REFRESH_TOKEN;
 
 public:
-    oAuth(std::string CLIENT_ID, std::string CLIENT_SECRET, std::string oAuthToken, std::string TOKEN, std::string REDIRECT_URI, std::string STATE = "34fFs29kd09", std::string SCOPE = "user-read-private user-read-email", bool SHOW_DIALOG = false);
+    oAuth(std::string CLIENT_ID, std::string CLIENT_SECRET, std::string oAuthToken, std::string REDIRECT_URI, std::string STATE = "34fFs29kd09", std::string SCOPE = "user-read-private user-read-email", bool SHOW_DIALOG = false);
+
+    std::vector<std::string> auth();
 
     std::string getAuthToken();
+    std::string getRefreshToken();
     std::string getRedirectURI();
     std::string getState();
     std::string getScope();

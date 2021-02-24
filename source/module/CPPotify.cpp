@@ -13,11 +13,15 @@ using namespace std;
 
 CPPotify::CPPotify(std::string ID, std::string SECRET) : CLIENT_ID(ID), CLIENT_SECRET(SECRET) {
     clientCredentials ac(this->CLIENT_ID, this->CLIENT_SECRET);
-    this->TOKEN = ac.auth();
     this->ac = ac;
+    this->TOKEN = ac.getToken();
 }
 
-CPPotify::CPPotify(std::string ID, std::string SECRET, std::string oAuthToken, std::string TOKEN, std::string REDIRECT_URI, std::string STATE, std::string SCOPE, bool SHOW_DIALOG) : CLIENT_ID(ID), CLIENT_SECRET(SECRET), oAuthToken(oAuthToken), TOKEN(TOKEN), REDIRECT_URI(REDIRECT_URI), STATE(STATE), SCOPE(SCOPE), SHOW_DIALOG(SHOW_DIALOG) {}
+CPPotify::CPPotify(std::string ID, std::string SECRET, std::string oAuthToken, std::string REDIRECT_URI, std::string STATE, std::string SCOPE, bool SHOW_DIALOG) : CLIENT_ID(ID), CLIENT_SECRET(SECRET), oAuthToken(oAuthToken), REDIRECT_URI(REDIRECT_URI), STATE(STATE), SCOPE(SCOPE), SHOW_DIALOG(SHOW_DIALOG) {
+    oAuth ac(this->CLIENT_ID, this->CLIENT_SECRET, this->oAuthToken, this->REDIRECT_URI, this->STATE, this->SCOPE, this->SHOW_DIALOG);
+    this->ac = ac;
+    this->TOKEN = ac.getToken();
+}
 
 CPPotify::~CPPotify() {}
 
@@ -58,7 +62,7 @@ std::vector<std::string> CPPotify::curlGET(std::string spotifyObj, std::map<std:
         if (it->second != "") {
             payloadStr = payloadStr + it->first + "=" + it->second;
 
-            if (std::next(it, 1) != payload.end()) {
+            if (it->first != "offset" || std::next(it, 1) != payload.end()) {
                 payloadStr = payloadStr + "&";
             }
         }
@@ -299,7 +303,7 @@ std::vector<std::string> CPPotify::getTracks(std::string trackID, std::string tr
         {"id", trackID},
         {"obj", ""}};
 
-    return this->curlGET(trackObj, payload);
+    return this->curlGET((trackObj == "" || trackObj == "tracks") ? "tracks" : trackObj, payload);
 }
 
 std::vector<std::string> CPPotify::browse(std::string browseCategory, std::string categoryID, std::string categoryObj, std::string timestamp, int limit, int offset) {
@@ -386,7 +390,7 @@ std::vector<std::string> CPPotify::postPlayer(std::string playerAction, std::str
 }
 
 std::string CPPotify::reAuth() {
-    this->TOKEN = ac.auth();
+    this->TOKEN = ac.auth()[0];
     return this->TOKEN;
 }
 
@@ -425,7 +429,7 @@ PYBIND11_MODULE(pybind11module, cpp) {
     cpp.doc() = "CPPotify Module - Python Spotify API using C++";
     py::class_<CPPotify>(cpp, "CPPotify")
             .def(py::init<std::string, std::string>())
-            .def(py::init<std::string, std::string, std::string, std::string, std::string, std::string, std::string, bool>())
+            .def(py::init<std::string, std::string, std::string, std::string, std::string, std::string, bool>())
             .def("curlGET", &CPPotify::curlGET)
             .def("getAlbums", &CPPotify::getAlbums)
             .def("getArtists", &CPPotify::getArtists)

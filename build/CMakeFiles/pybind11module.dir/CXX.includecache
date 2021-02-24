@@ -188,6 +188,18 @@ string
 vector
 -
 
+/home/amt99/Desktop/CPPotify/source/module/authControl.cpp
+authControl.h
+/home/amt99/Desktop/CPPotify/source/module/authControl.h
+regex
+-
+iostream
+-
+curl/curl.h
+-
+nlohmann/json.hpp
+-
+
 /home/amt99/Desktop/CPPotify/source/module/authControl.h
 string
 -

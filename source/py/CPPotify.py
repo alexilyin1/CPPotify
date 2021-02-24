@@ -7,7 +7,7 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.join(os.path.abspath('../../'), 'build/'))
 import pybind11module
-from auth import oAuth
+from . import CPPotify_exceptions
 
 
 class CPPotify:
@@ -43,13 +43,14 @@ class CPPotify:
     _token_check: Spotify API tokens are currently set to expire after 60 mintues - this function will auto-renew tokens 
     """
 
-    def __init__(self, CLIENT_ID, CLIENT_SECRET, REDIRECT_URI = "", STATE = "", SCOPE = "", SHOW_DIALOG: bool = False):
+    def __init__(self, CLIENT_ID, CLIENT_SECRET, REDIRECT_URI = "", STATE = "", SCOPE = "", SHOW_DIALOG: bool = False, debug_toggle = False):
         self.CLIENT_ID = CLIENT_ID 
         self.CLIENT_SECRET = CLIENT_SECRET
         self.REDIRECT_URI = REDIRECT_URI 
         self.STATE = STATE
         self.SCOPE = SCOPE 
         self.SHOW_DIALOG = SHOW_DIALOG
+        self.debug = debug_toggle
         self.auth_url = None
         self.TOKEN = None
         self.oAuth = None
@@ -438,7 +439,7 @@ class CPPotify:
                 warnings.warn(
                     "Spotify token has expired. No action needed, generating new token..."
                 )
-                self.oAuth.new_token()
+                self.TOKEN = self._cpp_obj.reAuth()
                 self.TOKEN_start = datetime.now()
 
                 warnings.warn("New Spotify token created")
@@ -451,7 +452,10 @@ class CPPotify:
         :param obj: Spotify object that generated the response
         :param timestamp: Timestamp of the request 
 
-        :return error_obj: Detailed error object containing error code, error reason, error message, Spotify object, Spotify request URL and timestamp
+        :raises SpotifyResponseException: If an error is found in the API response, a SpotifyResponseException will be raised
+
+        :returns response: If no errors occur, the response object will be returned. If unexpected error occurs, will raise a warning
+                           and return the original response object
         """
         response_map = {
             '200': 'OK',
@@ -468,31 +472,21 @@ class CPPotify:
             '502': 'Bad Gateway',
             '503': 'Service Unavailable'
         }
+
         try:
             response = json.loads(response)
             if 'error' in response.keys():
-                try:
-                    print("""Found error in response. \n
-                             URL: {} \n
-                             Code: {} \n
-                             Reason: {} \n
-                             Message: {} \n """.\
-                        format(request_url,
-                            str(response['error']['status']), 
-                            response_map[str(response['error']['status'])],
-                            response['error']['message']))
-
-                    return {'error': str(response['error']['status']),
-                            'reason': response_map[str(response['error']['status'])],
-                            'message': response['error']['message'],
-                            'request_obj': obj,
-                            'request_url': request_url, 
-                            'time': str(timestamp)}
-                except:
-                    warnings.warn("Unexpected error occured")
+                if str(response['error']['status']) in response_map.keys():
+                    raise CPPotify_exceptions.SpotifyResponseException(response, obj, request_url, timestamp)
+                else:
+                    warnings.warn("Unexpected error occured with request to {} at {}".format(request_url, str(timestamp)))
                     return response 
             else:
-                return response
+                if self.debug:
+                    print("""API call successfully completed for {} object at URL {}""".format(request_url, obj))
+                    return response
+                else:
+                    return response 
         except:
             print("""Found error in response. \n
                              URL: {} \n

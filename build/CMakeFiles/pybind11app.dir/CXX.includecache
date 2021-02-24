@@ -158,6 +158,16 @@ optional
 variant
 -
 
+/home/amt99/Desktop/CPPotify/source/app/app.cpp
+../module/CPPotify.h
+/home/amt99/Desktop/CPPotify/source/module/CPPotify.h
+../module/authControl.h
+/home/amt99/Desktop/CPPotify/source/module/authControl.h
+iostream
+-
+chrono
+-
+
 /home/amt99/Desktop/CPPotify/source/module/CPPotify.cpp
 CPPotify.h
 /home/amt99/Desktop/CPPotify/source/module/CPPotify.h
@@ -186,6 +196,18 @@ map
 string
 -
 vector
+-
+
+/home/amt99/Desktop/CPPotify/source/module/authControl.cpp
+authControl.h
+/home/amt99/Desktop/CPPotify/source/module/authControl.h
+regex
+-
+iostream
+-
+curl/curl.h
+-
+nlohmann/json.hpp
 -
 
 /home/amt99/Desktop/CPPotify/source/module/authControl.h

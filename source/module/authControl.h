@@ -57,6 +57,7 @@ public:
     oAuth(std::string CLIENT_ID, std::string CLIENT_SECRET, std::string oAuthToken, std::string REDIRECT_URI, std::string STATE = "34fFs29kd09", std::string SCOPE = "user-read-private user-read-email", bool SHOW_DIALOG = false);
 
     std::vector<std::string> auth();
+    std::string reAuth();
 
     std::string getAuthToken();
     std::string getRefreshToken();

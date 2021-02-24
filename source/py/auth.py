@@ -106,7 +106,3 @@ class oAuth:
             self.TOKEN = response['access_token']
         except KeyError:
             raise KeyError("Invalid oAuth token request response: " + response)
-        
-
-
-

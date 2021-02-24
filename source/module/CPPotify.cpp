@@ -394,9 +394,16 @@ std::string CPPotify::reAuth() {
     return this->TOKEN;
 }
 
+std::string CPPotify::reAuthoAuth() {
+    this->TOKEN = ac.reAuth();
+    return this->TOKEN;
+}
+
+
 std::string CPPotify::getClientID() {
     return this->CLIENT_ID;
 }
+
 std::string CPPotify::getClientSecret() {
     return this->CLIENT_SECRET;
 }

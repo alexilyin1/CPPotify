@@ -12,6 +12,7 @@ private:
     std::string CLIENT_SECRET;
     std::string oAuthToken;
     std::string TOKEN = "";
+    std::string REFRESH_TOKEN = "";
     std::string REDIRECT_URI; 
     std::string STATE;
     std::string SCOPE; 
@@ -52,11 +53,9 @@ public:
     POST methods
     */
     std::vector<std::string> postPlayer(std::string playerAction, std::string songURI = "", std::string deviceID = "");
-    /*
-    void postPlayer(std::string playerAction);
-    */
 
     std::string reAuth();
+    std::string reAuthoAuth();
 
     /*
     Getters and Setters

@@ -105,6 +105,10 @@ std::vector<std::string> authControl::auth() {
     return std::vector<std::string> {to_string(j["access_token"])};
 }
 
+std::string authControl::reAuth() {
+    return "";
+}
+
 std::string authControl::setToken() {
     return this->auth()[0];
 }
@@ -174,7 +178,6 @@ std::vector<std::string> oAuth::auth() {
             curl_easy_setopt(curl, CURLOPT_URL, "https://accounts.spotify.com/api/token");
 
             std::string body = "grant_type=authorization_code&code=" + this->getAuthToken() + "&redirect_uri=" + urlEncEasy(this->getRedirectURI());
-            std::cout << body << std::endl;
 
             curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());     
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, this->WriteCallback);
@@ -202,6 +205,47 @@ std::vector<std::string> oAuth::auth() {
 
     auto j = nlohmann::json::parse(res);
     return std::vector<std::string> {to_string(j["access_token"]), to_string(j["refresh_token"])};
+}
+
+std::string oAuth::reAuth() {
+    CURL *curl;
+    std::string res;
+
+    curl = curl_easy_init();
+    
+    if(curl) {
+        try {
+            curl_easy_setopt(curl, CURLOPT_TCP_NODELAY, 0);
+            curl_easy_setopt(curl, CURLOPT_URL, "https://accounts.spotify.com/api/token");
+
+            std::string body = "grant_type=refresh_token&refresh_token=" + this->getRefreshToken();
+
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());     
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, this->WriteCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &res);
+
+            std::string enc = this->base64_encode(reinterpret_cast<const unsigned char*>((this->getClientID() + ":" + this->getClientSecret()).data()), (this->getClientID() + ":" + this->getClientSecret()).length(), false);
+            
+            std::string encType = "Content-Type: application/x-www-form-urlencoded";
+            std::string httpAuth = "Authorization: Basic " + enc;
+            struct curl_slist *authChunk = nullptr;
+            authChunk = curl_slist_append(authChunk, encType.c_str());
+            authChunk = curl_slist_append(authChunk, httpAuth.c_str());
+
+            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, authChunk);
+
+            curl_easy_perform(curl);
+            curl_easy_cleanup(curl);
+        }
+        catch (const char* Exception) {
+            std::cerr << Exception << std::endl;
+        }
+    }
+
+    std::cout << res << std::endl;
+
+    auto j = nlohmann::json::parse(res);
+    return to_string(j["access_token"]);
 }
 
 std::string oAuth::getRedirectURI() {

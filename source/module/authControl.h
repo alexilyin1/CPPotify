@@ -28,6 +28,7 @@ public:
     static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp);
 
     virtual std::vector<std::string> auth();
+    virtual std::string reAuth();
 
     std::string setToken();
     std::string getClientID();

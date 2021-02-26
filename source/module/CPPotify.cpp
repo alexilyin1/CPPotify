@@ -4,7 +4,6 @@
 #include <typeinfo>
 #include <algorithm>
 #include <curl/curl.h>
-#include <nlohmann/json.hpp>
 #include <pybind11/stl.h>
 #include <pybind11/pybind11.h>
 
@@ -450,5 +449,6 @@ PYBIND11_MODULE(pybind11module, cpp) {
             .def("search", &CPPotify::search)
             .def("postPlayer", &CPPotify::postPlayer)
             .def("getToken", &CPPotify::getToken)
-            .def("reAuth", &CPPotify::reAuth);
+            .def("reAuth", &CPPotify::reAuth)
+            .def("reAuthoAuth", &CPPotify::reAuthoAuth);
 };

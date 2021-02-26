@@ -439,7 +439,7 @@ class CPPotify:
                 warnings.warn(
                     "Spotify token has expired. No action needed, generating new token..."
                 )
-                self.TOKEN = self._cpp_obj.reAuth()
+                self.TOKEN = self._cpp_obj.reAuthoAuth()
                 self.TOKEN_start = datetime.now()
 
                 warnings.warn("New Spotify token created")

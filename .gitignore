@@ -36,3 +36,5 @@ cppotify_env/
 *.csv
 *keys.py
 *keys.txt
+
+__pycache__/

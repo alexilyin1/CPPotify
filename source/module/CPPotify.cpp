@@ -36,7 +36,7 @@ std::vector<std::string> CPPotify::curlGET(std::string spotifyObj, std::map<std:
     
     std::string idStr = "";
     if (payload["id"] != "") {
-        idStr = (payload["id"].size() <= 22) ? "/" + payload["id"] : "/ids=" + payload["id"];
+        idStr = (payload["id"].size() <= 22) ? "/" + payload["id"] : "?ids=" + payload["id"];
     }
 
     std::string payloadStr = (payload["self"] == "1" && payload["obj"] == "") ? selfStr : spotifyObjStr + idStr;

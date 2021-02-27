@@ -7,7 +7,7 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.join(os.path.abspath('../../'), 'build/'))
 import pybind11module
-from . import CPPotify_exceptions
+import CPPotify_exceptions
 
 
 class CPPotify:

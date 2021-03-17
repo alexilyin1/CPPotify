@@ -128,7 +128,7 @@ class CPPotify:
         self._token_check()
         
         if type(album_id) == list:
-            call = self._cpp_obj.getAlbums(",".join([id for id in album_id]), album_obj, limit, offset)
+            call = self._cpp_obj.getAlbums("%2C".join([id for id in album_id]), album_obj, limit, offset)
         else:
             call = self._cpp_obj.getAlbums(album_id, album_obj, limit, offset)
 
@@ -159,7 +159,7 @@ class CPPotify:
         self._token_check()
         
         if type(artist_id) == list:
-            call = self._cpp_obj.getArtists(",".join([id for id in artist_id]), artist_obj, include_groups, limit, offset)
+            call = self._cpp_obj.getArtists("%2C".join([id for id in artist_id]), artist_obj, include_groups, limit, offset)
         else:
             call = self._cpp_obj.getArtists(artist_id, artist_obj, include_groups, limit, offset)
 
@@ -196,7 +196,7 @@ class CPPotify:
 
     def get_player(self, player_obj = ''):
         """
-        Return information about Spotify songs/tracks
+        Return information about the Spotify player
 
         :param Audio_analysis: Bool, set to True if you returning audio analysis and features. Audio analysis/features for one 
                                song is returned as a nested Json
@@ -287,7 +287,7 @@ class CPPotify:
         self._token_check()
 
         if type(show_id) == list:
-            call = self._cpp_obj.getShows(",".join([id for id in show_id]), show_obj)
+            call = self._cpp_obj.getShows("%2C".join([id for id in show_id]), show_obj)
         else:
             call = self._cpp_obj.getShows(show_id, show_obj)
 
@@ -314,7 +314,7 @@ class CPPotify:
         self._token_check()
 
         if type(track_id) == list:
-            call = self._cpp_obj.getTracks(",".join([id for id in track_id]), track_obj)
+            call = self._cpp_obj.getTracks("%2C".join([id for id in track_id]), track_obj)
         else:
             call = self._cpp_obj.getTracks(track_id, track_obj)
 
@@ -371,7 +371,7 @@ class CPPotify:
         self._token_check()
 
         if type(obj_type) == list:
-            call = self._cpp_obj.search(query, ",".join([typ for typ in obj_type]), filt, limit, offset)
+            call = self._cpp_obj.search(query, "%2C".join([typ for typ in obj_type]), filt, limit, offset)
         else:
             call = self._cpp_obj.search(query, obj_type, filt, limit, offset)
 
@@ -417,11 +417,11 @@ class CPPotify:
         """
         if not self.oAuth:
             seconds_after_start = (datetime.now() - self.TOKEN_start).seconds
-            if seconds_after_start >= 3000 and seconds_after_start < 3600:
+            if seconds_after_start >= 3000 and seconds_after_start < 3400:
                 warnings.warn(
                     "Spotify token nearing expiration. This class will generate a new Spotify token when the token expires"
                 )
-            elif seconds_after_start >= 3600:
+            elif seconds_after_start >= 3400:
                 warnings.warn(
                     "Spotify token has expired. No action needed, generating new token..."
                 )
@@ -431,11 +431,11 @@ class CPPotify:
                 warnings.warn("New Spotify token created")
         else:
             seconds_after_start = (datetime.now() - self.TOKEN_start).seconds
-            if seconds_after_start >= 3000 and seconds_after_start < 3600:
+            if seconds_after_start >= 3000 and seconds_after_start < 3400:
                 warnings.warn(
                     "Spotify token nearing expiration. This class will generate a new Spotify token when the token expires"
                 )
-            elif seconds_after_start >= 3600:
+            elif seconds_after_start >= 3400:
                 warnings.warn(
                     "Spotify token has expired. No action needed, generating new token..."
                 )

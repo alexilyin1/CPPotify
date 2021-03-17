@@ -6,8 +6,6 @@ import unittest
 from keys import *
 
 
-
-
 class GetAlbums(unittest.TestCase):
 
     def test_objects(self):
